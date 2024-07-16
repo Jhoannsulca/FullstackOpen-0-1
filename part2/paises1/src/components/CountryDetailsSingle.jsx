@@ -3,18 +3,9 @@ import { useEffect, useState } from 'react'
 import climaService from '../services/countries'
 import WeatherApp from './WeatherApp';
 
+const CountryDetailsSingle = ({ country }) => {
 
-const CountryDetails = ({ country, unDetail }) => {
-
-  const [clima, setClima] = useState(''); //Clima de la capital
-
-  useEffect(() => {
-    climaService
-      .getClimaCapital(country.capital)
-      .then(initialClima => {
-        setClima(initialClima)
-      })
-  }, [country])
+  const [clima, setClima] = useState([]); //Clima de la capital
 
     return (
       <div>
@@ -31,10 +22,10 @@ const CountryDetails = ({ country, unDetail }) => {
         </ul>
         <img src={country.flags.png} alt={country.flags.alt} />
         <WeatherApp country={country}/>
-        <button className="btn btn-secondary ml-2" onClick={() => unDetail(null)}>Cerrar</button>
- 
+
       </div>
     );
   };
   
-export default CountryDetails
+
+export default CountryDetailsSingle

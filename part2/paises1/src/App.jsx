@@ -1,19 +1,16 @@
 import React from 'react'
 import { useEffect, useState } from 'react'
 import countryService from './services/countries'
-import Country from './components/Country';
+import CountrySingle from './components/CountryDetailsSingle';
 import CountryDetails from './components/CountryDetails';
+
 
 const App = () => {
   const [countries, setCountries] = useState([]); //Todos los paises
-  const [newSearch, setNewSearch] = useState('') //Valor ingreasado
   const [searchResults, setSearchResults] = useState([]); // Array to store filtered results
-  const [showDetails, setShowDetails] = useState(false);
-  // const [selectedCountry, setSelectedCountry] = useState(null);
+  const [selectedCountry, setSelectedCountry] = useState(null);
 
-
-  // const [selectedCountry, setSelectedCountry] = useState(null);
-
+  //Efecto para obtener los paises
   useEffect(() => {
     countryService
       .getAll()
@@ -21,70 +18,58 @@ const App = () => {
         setCountries(initialCountries)
       })
   }, [countries])
-  
-  const filteredCountries = countries.filter(country =>  //4. Filtrar los datos en un nuevo Array "filteredCountries"
-    country.name.common.toLowerCase().includes(newSearch.toLowerCase())
-  );
+
 
   const handleSearch = (e) => {
     const searchTerm = e.target.value.toLowerCase();
     const filteredCountries = countries.filter((country) =>
       country.name.common.toLowerCase().includes(searchTerm)
     );
-    setNewSearch(filteredCountries);
-  };
-  const handleQuery = (e) => {                            //3. Función de busqueda
-    setNewSearch(e.target.value)
-  }
-
-  const handleShowDetails = () => {
-    setShowDetails(true);
+    setSearchResults(filteredCountries);
   };
 
-  const handleHideDetails = () => {
-    setShowDetails(false);
+  const handleShowDetails = (country) => {
+    setSelectedCountry(country);
   };
-
-
-  const renderCountryDetail = (country) => {
-      return (
-        <CountryDetails country={filteredCountries[0]} onClose={handleHideDetails}/>
-      )
-  }
-
-  const renderCountryList = () => {
-    if (filteredCountries.length > 10) {
-      return <p>Too many matches, specify another filter</p>;
-    }
-    else if (filteredCountries.length === 1) {
-      // setShowDetails(true)
-      return (
-        renderCountryDetail(filteredCountries[0])
-      );
-    } 
-    else if (filteredCountries.length > 1) {
-      return (
-        <ul className="list-group">
-          {filteredCountries.map((country) =>
-            <Country country={country} showDetails={showDetails} handleShowDetails={handleShowDetails} handleHideDetails={handleHideDetails}/>
-          )}
-        </ul>  
-      ) 
-    } else {
-      return <p>No results found.</p>; // Handle no search results case
-    } 
-  };
+  
 
   return (
     <div className={'container'}>
-      <h1>SEARCH COUNTRIES</h1>
+      <h1>LIST OF COUNTRIES</h1>
       <div className='container'>
-            <input type="text" placeholder='Buscar pais...' onChange={handleQuery}/>
+            <input type="text" placeholder='Buscar pais...' onChange={handleSearch}/>
         </div>
-      <div>
-        {newSearch.length > 0 && renderCountryList()}
-        {/* {showUno && renderCountryDetail} */}
-      </div>
+
+      {/* Renderizado condicional basado en los resultados de la busqueda */}
+      {searchResults.length === 1 ? (
+        // Mostrar resultado directamente cuando hay un solo resultado
+        <div className="country-details">
+          <CountrySingle country={searchResults[0]}/>
+        </div>
+      ) : (
+        // Show search results or country list if applicable
+        searchResults.length > 0 && searchResults.length < 10 ? (
+          <ul>
+            {searchResults.map((country, i) => (
+              <li key={i}>
+                <span>{country.name.common}</span>
+                <button className="btn btn-secondary ml-2" onClick={() => handleShowDetails(country)}>Detalle</button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          searchResults.length > 0 ? (
+            <p>Especifíca la busqueda</p>
+
+          ): (
+            <p>Insertar busqueda</p>
+          )
+        )
+      )}
+
+      {/* Country details modal (if selectedCountry is set) */}
+      {selectedCountry && <CountryDetails country={selectedCountry} unDetail={setSelectedCountry}/>}
+
     </div>
   )
 }
